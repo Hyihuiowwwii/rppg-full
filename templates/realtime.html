@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Real-time Monitor{% endblock %}
+{% block content %}
+<h1>Real-time Heart Rate Monitoring</h1>
+
+<div class="grid realtime-grid">
+    <div class="card">
+        <h2>Live Camera Feed</h2>
+        <div class="video-box">
+            <img id="videoFeed" src="/video_feed" alt="video">
+        </div>
+
+        <div class="controls">
+            <button class="btn green-btn" onclick="startLive()">Start Live</button>
+
+            <select id="subjectSelect">
+                {% for s in subjects %}
+                <option value="{{ s }}">{{ s }}</option>
+                {% endfor %}
+            </select>
+
+            <button class="btn blue-btn" onclick="startDemo()">Start Demo</button>
+            <button class="btn red-btn" onclick="stopMonitor()">Stop</button>
+        </div>
+
+        <div class="note-box">
+            <ul>
+                <li>Ensure good lighting on face.</li>
+                <li>Keep face steady and centered.</li>
+                <li>Demo mode uses dataset subject video.</li>
+                <li>Blue box = forehead ROI for signal extraction.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card stats-side">
+        <h2>Heart Rate</h2>
+        <div class="big-bpm" id="currentBpm">--</div>
+        <p class="subtext">Beats Per Minute (BPM)</p>
+
+        <div class="grid three-cols">
+            <div class="mini-stat"><span>Min</span><strong id="minBpm">--</strong></div>
+            <div class="mini-stat"><span>Avg</span><strong id="avgBpm">--</strong></div>
+            <div class="mini-stat"><span>Max</span><strong id="maxBpm">--</strong></div>
+        </div>
+
+        <div class="progress-block">
+            <label>Signal Quality</label>
+            <div class="progress-bar"><div id="qualityBar" class="progress-fill"></div></div>
+            <small id="qualityText">0%</small>
+        </div>
+
+        <div class="progress-block">
+            <label>Buffer Status</label>
+            <div class="progress-bar"><div id="bufferBar" class="progress-fill cyan-fill"></div></div>
+            <small id="bufferText">0/150</small>
+        </div>
+
+        <div class="status-box" id="statusText">Idle</div>
+        <div class="status-box secondary" id="modeText">Mode: idle</div>
+        <div class="status-box secondary" id="subjectText">Subject: -</div>
+        <div class="status-box secondary" id="durationText">Duration: 0 s</div>
+    </div>
+</div>
+
+<div class="grid two-cols">
+    <div class="card">
+        <h2>Raw rPPG Signal</h2>
+        <canvas id="signalChart"></canvas>
+    </div>
+    <div class="card">
+        <h2>BPM Trend</h2>
+        <canvas id="bpmChart"></canvas>
+    </div>
+</div>
+
+<script>
+let signalChart;
+let bpmChart;
+
+function createCharts() {
+    const signalCtx = document.getElementById("signalChart").getContext("2d");
+    const bpmCtx = document.getElementById("bpmChart").getContext("2d");
+
+    signalChart = new Chart(signalCtx, {
+        type: "line",
+        data: { labels: [], datasets: [{ label: "Signal", data: [], borderWidth: 2, tension: 0.2 }] },
+        options: { responsive: true, animation: false }
+    });
+
+    bpmChart = new Chart(bpmCtx, {
+        type: "line",
+        data: { labels: [], datasets: [{ label: "BPM", data: [], borderWidth: 2, tension: 0.2 }] },
+        options: { responsive: true, animation: false }
+    });
+}
+
+async function startLive() {
+    await fetch("/api/start_live", { method: "POST" });
+}
+
+async function startDemo() {
+    const subject = document.getElementById("subjectSelect").value;
+    await fetch("/api/start_demo", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ subject })
+    });
+}
+
+async function stopMonitor() {
+    await fetch("/api/stop", { method: "POST" });
+}
+
+async function loadStats() {
+    const response = await fetch("/api/stats");
+    const data = await response.json();
+
+    document.getElementById("currentBpm").innerText = data.current_bpm || "--";
+    document.getElementById("minBpm").innerText = data.min_bpm || "--";
+    document.getElementById("avgBpm").innerText = data.avg_bpm || "--";
+    document.getElementById("maxBpm").innerText = data.max_bpm || "--";
+
+    document.getElementById("qualityBar").style.width = data.signal_quality + "%";
+    document.getElementById("qualityText").innerText = data.signal_quality + "%";
+
+    const bufferPercent = Math.min(100, (data.buffer_count / data.buffer_target) * 100);
+    document.getElementById("bufferBar").style.width = bufferPercent + "%";
+    document.getElementById("bufferText").innerText = data.buffer_count + "/" + data.buffer_target;
+
+    document.getElementById("statusText").innerText = data.face_found ? "Face detected" : data.status;
+    document.getElementById("modeText").innerText = "Mode: " + data.mode;
+    document.getElementById("subjectText").innerText = "Subject: " + (data.subject || "-");
+    document.getElementById("durationText").innerText = "Duration: " + data.duration + " s";
+
+    signalChart.data.labels = data.signal_times.map(x => x.toFixed(1));
+    signalChart.data.datasets[0].data = data.signal_values;
+    signalChart.update();
+
+    bpmChart.data.labels = data.bpm_times.map(x => x.toFixed(1));
+    bpmChart.data.datasets[0].data = data.bpm_values;
+    bpmChart.update();
+}
+
+createCharts();
+setInterval(loadStats, 1200);
+</script>
+{% endblock %}
