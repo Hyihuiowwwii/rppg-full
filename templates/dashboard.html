@@ -1,90 +1,74 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
 {% block content %}
-<h1>Dashboard</h1>
+<h1 class="page-title">Dashboard</h1>
 
-<div class="grid cards-4">
-    <div class="card blue">
-        <h3>Live Heart Rate Monitoring</h3>
-        <p>Start webcam based monitoring.</p>
-        <a class="btn white-btn" href="/realtime">Start</a>
+<div class="dashboard-cards">
+    <div class="dash-card blue">
+        <h3>Real-time Monitor</h3>
+        <p>Live heart rate monitoring</p>
+        <a class="btn white-btn" href="{{ url_for('realtime_monitoring') }}">Start</a>
     </div>
-    <div class="card green">
-        <h3>Validate Model Performance</h3>
-        <p>Analyze subject videos and compare with ground truth.</p>
-        <a class="btn white-btn" href="/dataset-analysis">Analyze</a>
+    <div class="dash-card green">
+        <h3>Dataset Analysis</h3>
+        <p>Validate model performance</p>
+        <a class="btn white-btn" href="{{ url_for('dataset_analysis') }}">Analyze</a>
     </div>
-    <div class="card cyan">
-        <h3>Technical Details</h3>
-        <p>View architecture and methods.</p>
-        <a class="btn white-btn" href="/model-info">View</a>
+    <div class="dash-card cyan">
+        <h3>Model Info</h3>
+        <p>Technical details</p>
+        <a class="btn white-btn" href="{{ url_for('model_info') }}">View</a>
     </div>
-    <div class="card yellow">
-        <h3>Past Analyses</h3>
-        <p>{{ total_sessions }} records</p>
-        <a class="btn white-btn" href="/history">Open</a>
+    <div class="dash-card yellow">
+        <h3>History</h3>
+        <p>Past analyses</p>
+        <a class="btn white-btn" href="{{ url_for('history') }}">{{ history|length }} records</a>
     </div>
 </div>
 
-<div class="grid main-two">
-    <div class="card">
+<div class="dashboard-row">
+    <div class="panel big-panel">
         <h2>Quick Actions</h2>
-        <div class="grid two-cols">
-            <div class="inner-card">
+        <div class="quick-grid">
+            <div class="quick-box">
                 <h3>Quick HR Check</h3>
                 <p>Take a quick heart rate measurement</p>
-                <a class="btn" href="/realtime">Start</a>
+                <a class="btn primary" href="{{ url_for('realtime_monitoring') }}">Start</a>
             </div>
-            <div class="inner-card">
+            <div class="quick-box">
                 <h3>Run Analysis</h3>
                 <p>Validate model on dataset</p>
-                <a class="btn green-btn" href="/dataset-analysis">Run</a>
+                <a class="btn green-btn" href="{{ url_for('dataset_analysis') }}">Run</a>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <h2>Summary</h2>
-        <p><strong>Total sessions:</strong> {{ total_sessions }}</p>
-        <p><strong>Average BPM:</strong> {{ avg_bpm }}</p>
-        {% if last %}
-        <p><strong>Last mode:</strong> {{ last.mode }}</p>
-        <p><strong>Last avg BPM:</strong> {{ last.avg_bpm }}</p>
-        {% else %}
-        <p>No session saved yet.</p>
-        {% endif %}
+    <div class="panel side-panel">
+        <h2>User Info</h2>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Member since:</strong> {{ user.created_at }}</p>
     </div>
 </div>
 
-<div class="card">
+<div class="panel">
     <h2>Recent Analyses</h2>
-    {% if last %}
     <table>
         <thead>
             <tr>
+                <th>Type</th>
                 <th>Date</th>
-                <th>Mode</th>
-                <th>Subject</th>
-                <th>Avg BPM</th>
-                <th>Min</th>
-                <th>Max</th>
-                <th>Duration</th>
+                <th>Results</th>
             </tr>
         </thead>
         <tbody>
+            {% for row in history %}
             <tr>
-                <td>{{ last.datetime }}</td>
-                <td>{{ last.mode }}</td>
-                <td>{{ last.subject }}</td>
-                <td>{{ last.avg_bpm }}</td>
-                <td>{{ last.min_bpm }}</td>
-                <td>{{ last.max_bpm }}</td>
-                <td>{{ last.duration_sec }} s</td>
+                <td>{{ row.mode }}</td>
+                <td>{{ row.created_at }}</td>
+                <td><strong>{{ row.avg_bpm }} BPM average</strong> | Range: {{ row.min_bpm }} - {{ row.max_bpm }} BPM | {{ row.samples }} measurements</td>
             </tr>
+            {% endfor %}
         </tbody>
     </table>
-    {% else %}
-    <p>No analysis records available.</p>
-    {% endif %}
 </div>
 {% endblock %}
