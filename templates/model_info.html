@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Model Info{% endblock %}
+{% block content %}
+<h1>Model Information</h1>
+<p>Technical details and specifications of the rPPG heart rate monitoring system.</p>
+
+<div class="grid two-cols">
+    <div class="card">
+        <h2>Model Overview</h2>
+        <p><strong>System:</strong> HeartRate Pro v1.0.0</p>
+        <p><strong>Goal:</strong> Real-time remote heart rate monitoring using facial video.</p>
+        <ul>
+            <li>Non-contact measurement</li>
+            <li>Real-time processing</li>
+            <li>Dataset validation</li>
+            <li>Web-based interface</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>Technical Specifications</h2>
+        <p><strong>Face detection:</strong> Haar Cascade</p>
+        <p><strong>ROI:</strong> Forehead region</p>
+        <p><strong>Signal extraction:</strong> Green channel mean</p>
+        <p><strong>Signal processing:</strong> Detrending + FFT</p>
+        <p><strong>Heart rate range:</strong> 40 to 180 BPM</p>
+        <p><strong>Sampling target:</strong> ~30 FPS</p>
+    </div>
+</div>
+
+<div class="grid pipeline-grid">
+    <div class="pipe-box blue">Video Input<br><small>Webcam / Demo video</small></div>
+    <div class="arrow">→</div>
+    <div class="pipe-box cyan">Face Detection<br><small>Haar Cascade</small></div>
+    <div class="arrow">→</div>
+    <div class="pipe-box green">ROI Extraction<br><small>Forehead region</small></div>
+    <div class="arrow">→</div>
+    <div class="pipe-box red">Signal Processing<br><small>FFT + BPM</small></div>
+</div>
+
+<div class="grid three-cols">
+    <div class="card">
+        <h2>Performance</h2>
+        <p><strong>Real-time output:</strong> Yes</p>
+        <p><strong>Buffer target:</strong> 150 samples</p>
+        <p><strong>Average delay:</strong> Few seconds</p>
+    </div>
+
+    <div class="card">
+        <h2>Dataset Validation</h2>
+        <p>Supports UBFC/Kaggle style dataset folders containing:</p>
+        <ul>
+            <li>Video file</li>
+            <li>ground_truth.txt</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>Deep Learning</h2>
+        <p><strong>Model:</strong> 1D CNN</p>
+        <p><strong>Training file:</strong> model/train_dl_model.py</p>
+        <p><strong>Prediction file:</strong> model/predict_dl.py</p>
+        <p>Currently included for final integration and future improvement.</p>
+    </div>
+</div>
+{% endblock %}
