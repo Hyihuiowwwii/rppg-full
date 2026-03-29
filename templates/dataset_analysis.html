@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="page-title">UBFC Dataset Analysis</h1>
+<p class="subhead">Analyze heart rate data from the UBFC/Kaggle-style dataset and compare with ground truth values.</p>
+
+<div class="panel">
+    <div class="panel-header blue-header">Analysis Controls</div>
+    <div class="control-row">
+        <button class="btn green-btn" onclick="runAnalysis()">Run Dataset Analysis</button>
+        <button class="btn secondary" onclick="location.reload()">Refresh Results</button>
+        <div class="status-pill" id="runStatus">Ready</div>
+    </div>
+</div>
+
+<div class="panel">
+    <h2>Console Output</h2>
+    <div class="console-box" id="consoleBox">[System] Ready to analyze dataset.</div>
+</div>
+
+{% if summary %}
+<div class="summary-cards">
+    <div class="summary-card"><strong>{{ summary.total_subjects }}</strong><span>Total Subjects</span></div>
+    <div class="summary-card"><strong>{{ summary.successful_analyses }}</strong><span>Successful Analyses</span></div>
+    <div class="summary-card"><strong>{{ summary.average_accuracy }}%</strong><span>Average Accuracy</span></div>
+    <div class="summary-card"><strong>{{ summary.average_error }} BPM</strong><span>Average Error</span></div>
+</div>
+
+<div class="panel">
+    <h2>Detailed Subject Results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Ground Truth HR</th>
+                <th>Estimated HR</th>
+                <th>Error</th>
+                <th>Accuracy</th>
+                <th>Duration</th>
+                <th>Signal Length</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in summary.subjects %}
+            <tr>
+                <td>{{ row.subject }}</td>
+                <td>{{ row.gt_hr }} BPM</td>
+                <td>{{ row.est_hr }} BPM</td>
+                <td>{{ row.error }} BPM</td>
+                <td>{{ row.accuracy }}%</td>
+                <td>{{ row.duration }} s</td>
+                <td>{{ row.signal_length }}</td>
+                <td><a class="btn secondary" target="_blank" href="{{ url_for('static', filename='plots/' ~ row.plot_file) }}">View Plot</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<script>
+function logLine(text) {
+    const box = document.getElementById("consoleBox");
+    box.innerHTML += "<br>" + text;
+    box.scrollTop = box.scrollHeight;
+}
+
+async function runAnalysis() {
+    document.getElementById("runStatus").innerText = "Running...";
+    logLine("[System] Starting dataset analysis...");
+
+    const res = await fetch("/api/run_dataset_analysis", { method: "POST" });
+    const data = await res.json();
+
+    if (data.success) {
+        logLine("[System] Analysis completed successfully.");
+        logLine("[System] Average accuracy: " + data.average_accuracy + "%");
+        document.getElementById("runStatus").innerText = "Completed";
+        setTimeout(() => location.reload(), 1000);
+    } else {
+        logLine("[Error] " + data.message);
+        document.getElementById("runStatus").innerText = "Failed";
+    }
+}
+</script>
+{% endblock %}
