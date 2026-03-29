@@ -1,76 +1,73 @@
 {% extends "base.html" %}
-{% block title %}Real-time Monitor{% endblock %}
 {% block content %}
-<h1>Real-time Heart Rate Monitoring</h1>
+<h1 class="page-title">Real-time Heart Rate Monitoring</h1>
 
-<div class="grid realtime-grid">
-    <div class="card">
-        <h2>Live Camera Feed</h2>
+<div class="monitor-grid">
+    <div class="panel left-panel">
+        <div class="panel-header blue-header">Live Camera Feed</div>
         <div class="video-box">
-            <img id="videoFeed" src="/video_feed" alt="video">
+            <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="video">
         </div>
 
-        <div class="controls">
-            <button class="btn green-btn" onclick="startLive()">Start Live</button>
+        <div class="control-row">
+            <button class="btn green-btn" onclick="startLive()">Start Monitoring</button>
+            <button class="btn blue-btn" onclick="startDemo()">Start Demo</button>
+            <button class="btn red-btn" onclick="stopMonitor()">Stop Monitoring</button>
+        </div>
 
+        <div class="demo-row">
+            <label>Demo Subject:</label>
             <select id="subjectSelect">
                 {% for s in subjects %}
-                <option value="{{ s }}">{{ s }}</option>
+                    <option value="{{ s }}">{{ s }}</option>
                 {% endfor %}
             </select>
 
-            <button class="btn blue-btn" onclick="startDemo()">Start Demo</button>
-            <button class="btn red-btn" onclick="stopMonitor()">Stop</button>
+            <label><input type="checkbox" id="useDl"> Use DL model</label>
         </div>
 
-        <div class="note-box">
+        <div class="instruction-box">
+            <strong>Instructions:</strong>
             <ul>
-                <li>Ensure good lighting on face.</li>
-                <li>Keep face steady and centered.</li>
-                <li>Demo mode uses dataset subject video.</li>
-                <li>Blue box = forehead ROI for signal extraction.</li>
+                <li>Ensure good lighting on your face</li>
+                <li>Keep face steady and centered in the frame</li>
+                <li>Maintain distance of 1–2 feet from the camera</li>
+                <li>Demo mode uses Kaggle/UBFC-style dataset video</li>
+                <li>Green box shows face detection, blue box shows ROI</li>
             </ul>
         </div>
     </div>
 
-    <div class="card stats-side">
-        <h2>Heart Rate</h2>
-        <div class="big-bpm" id="currentBpm">--</div>
-        <p class="subtext">Beats Per Minute (BPM)</p>
+    <div class="panel right-panel">
+        <div class="panel-header green-header">Heart Rate</div>
 
-        <div class="grid three-cols">
-            <div class="mini-stat"><span>Min</span><strong id="minBpm">--</strong></div>
-            <div class="mini-stat"><span>Avg</span><strong id="avgBpm">--</strong></div>
-            <div class="mini-stat"><span>Max</span><strong id="maxBpm">--</strong></div>
+        <div class="bpm-big" id="currentBpm">--</div>
+        <div class="muted">Beats Per Minute (BPM)</div>
+
+        <div class="stats-three">
+            <div class="small-stat"><span>Min</span><strong id="minBpm">--</strong></div>
+            <div class="small-stat"><span>Avg</span><strong id="avgBpm">--</strong></div>
+            <div class="small-stat"><span>Max</span><strong id="maxBpm">--</strong></div>
         </div>
 
-        <div class="progress-block">
-            <label>Signal Quality</label>
-            <div class="progress-bar"><div id="qualityBar" class="progress-fill"></div></div>
-            <small id="qualityText">0%</small>
-        </div>
+        <h3>Signal Quality</h3>
+        <div class="progress-bg"><div id="qualityBar" class="progress-fill"></div></div>
+        <div id="qualityText" class="muted">Waiting for signal...</div>
 
-        <div class="progress-block">
-            <label>Buffer Status</label>
-            <div class="progress-bar"><div id="bufferBar" class="progress-fill cyan-fill"></div></div>
-            <small id="bufferText">0/150</small>
-        </div>
+        <h3>Buffer Status</h3>
+        <div class="progress-bg"><div id="bufferBar" class="progress-fill cyan-fill"></div></div>
+        <div id="bufferText" class="muted">Collecting data: 0/150 frames</div>
 
-        <div class="status-box" id="statusText">Idle</div>
+        <div class="status-box" id="statusBox">Ready to start monitoring</div>
         <div class="status-box secondary" id="modeText">Mode: idle</div>
         <div class="status-box secondary" id="subjectText">Subject: -</div>
-        <div class="status-box secondary" id="durationText">Duration: 0 s</div>
-    </div>
-</div>
 
-<div class="grid two-cols">
-    <div class="card">
-        <h2>Raw rPPG Signal</h2>
-        <canvas id="signalChart"></canvas>
-    </div>
-    <div class="card">
-        <h2>BPM Trend</h2>
-        <canvas id="bpmChart"></canvas>
+        <div class="chart-panel">
+            <canvas id="signalChart"></canvas>
+        </div>
+        <div class="chart-panel">
+            <canvas id="bpmChart"></canvas>
+        </div>
     </div>
 </div>
 
@@ -78,19 +75,16 @@
 let signalChart;
 let bpmChart;
 
-function createCharts() {
-    const signalCtx = document.getElementById("signalChart").getContext("2d");
-    const bpmCtx = document.getElementById("bpmChart").getContext("2d");
-
-    signalChart = new Chart(signalCtx, {
+function initCharts() {
+    signalChart = new Chart(document.getElementById("signalChart").getContext("2d"), {
         type: "line",
-        data: { labels: [], datasets: [{ label: "Signal", data: [], borderWidth: 2, tension: 0.2 }] },
+        data: { labels: [], datasets: [{ label: "Signal", data: [], borderWidth: 2 }] },
         options: { responsive: true, animation: false }
     });
 
-    bpmChart = new Chart(bpmCtx, {
+    bpmChart = new Chart(document.getElementById("bpmChart").getContext("2d"), {
         type: "line",
-        data: { labels: [], datasets: [{ label: "BPM", data: [], borderWidth: 2, tension: 0.2 }] },
+        data: { labels: [], datasets: [{ label: "BPM", data: [], borderWidth: 2 }] },
         options: { responsive: true, animation: false }
     });
 }
@@ -101,20 +95,22 @@ async function startLive() {
 
 async function startDemo() {
     const subject = document.getElementById("subjectSelect").value;
+    const useDl = document.getElementById("useDl").checked;
+
     await fetch("/api/start_demo", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ subject })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: subject, use_dl: useDl })
     });
 }
 
 async function stopMonitor() {
-    await fetch("/api/stop", { method: "POST" });
+    await fetch("/api/stop_monitor", { method: "POST" });
 }
 
 async function loadStats() {
-    const response = await fetch("/api/stats");
-    const data = await response.json();
+    const res = await fetch("/api/stats");
+    const data = await res.json();
 
     document.getElementById("currentBpm").innerText = data.current_bpm || "--";
     document.getElementById("minBpm").innerText = data.min_bpm || "--";
@@ -126,12 +122,11 @@ async function loadStats() {
 
     const bufferPercent = Math.min(100, (data.buffer_count / data.buffer_target) * 100);
     document.getElementById("bufferBar").style.width = bufferPercent + "%";
-    document.getElementById("bufferText").innerText = data.buffer_count + "/" + data.buffer_target;
+    document.getElementById("bufferText").innerText = "Collecting data: " + data.buffer_count + "/" + data.buffer_target + " frames";
 
-    document.getElementById("statusText").innerText = data.face_found ? "Face detected" : data.status;
+    document.getElementById("statusBox").innerText = data.status;
     document.getElementById("modeText").innerText = "Mode: " + data.mode;
-    document.getElementById("subjectText").innerText = "Subject: " + (data.subject || "-");
-    document.getElementById("durationText").innerText = "Duration: " + data.duration + " s";
+    document.getElementById("subjectText").innerText = "Subject: " + data.subject;
 
     signalChart.data.labels = data.signal_times.map(x => x.toFixed(1));
     signalChart.data.datasets[0].data = data.signal_values;
@@ -142,7 +137,7 @@ async function loadStats() {
     bpmChart.update();
 }
 
-createCharts();
+initCharts();
 setInterval(loadStats, 1200);
 </script>
 {% endblock %}
