@@ -1,40 +1,33 @@
 {% extends "base.html" %}
-{% block title %}History{% endblock %}
 {% block content %}
-<h1>Session History</h1>
+<h1 class="page-title">Session History</h1>
 
-<div class="card">
-    {% if rows %}
+<div class="panel">
     <table>
         <thead>
             <tr>
-                <th>Date/Time</th>
+                <th>Time</th>
                 <th>Mode</th>
                 <th>Subject</th>
                 <th>Avg BPM</th>
                 <th>Min BPM</th>
                 <th>Max BPM</th>
                 <th>Samples</th>
-                <th>Duration</th>
             </tr>
         </thead>
         <tbody>
-            {% for row in rows %}
+            {% for row in logs %}
             <tr>
-                <td>{{ row.datetime }}</td>
+                <td>{{ row.created_at }}</td>
                 <td>{{ row.mode }}</td>
                 <td>{{ row.subject }}</td>
                 <td>{{ row.avg_bpm }}</td>
                 <td>{{ row.min_bpm }}</td>
                 <td>{{ row.max_bpm }}</td>
                 <td>{{ row.samples }}</td>
-                <td>{{ row.duration_sec }} s</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    {% else %}
-    <p>No session history available yet.</p>
-    {% endif %}
 </div>
 {% endblock %}
