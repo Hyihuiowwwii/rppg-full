@@ -1,66 +1,59 @@
 {% extends "base.html" %}
-{% block title %}Model Info{% endblock %}
 {% block content %}
-<h1>Model Information</h1>
-<p>Technical details and specifications of the rPPG heart rate monitoring system.</p>
+<h1 class="page-title">Model Information</h1>
+<p class="subhead">Technical details and specifications of the HeartRate Pro monitoring system</p>
 
-<div class="grid two-cols">
-    <div class="card">
-        <h2>Model Overview</h2>
-        <p><strong>System:</strong> HeartRate Pro v1.0.0</p>
-        <p><strong>Goal:</strong> Real-time remote heart rate monitoring using facial video.</p>
+<div class="panel">
+    <div class="panel-header blue-header">Model Overview</div>
+    <div class="model-grid">
+        <div>
+            <h2>HeartRate Pro v1.0.0</h2>
+            <p>
+                Advanced real-time heart rate monitoring using remote photoplethysmography (rPPG).
+                This non-contact method analyzes subtle color changes in facial skin to detect heart rate.
+            </p>
+            <ul>
+                <li>Non-contact measurement</li>
+                <li>Real-time processing</li>
+                <li>Dataset validation</li>
+                <li>Web-based interface</li>
+            </ul>
+        </div>
+        <div class="logo-box">❤️ HeartRate Pro</div>
+    </div>
+</div>
+
+<div class="model-two">
+    <div class="panel">
+        <div class="panel-header cyan-header">Technical Specifications</div>
+        <table>
+            <tr><td>Signal Processing</td><td>FFT, Green-channel extraction</td></tr>
+            <tr><td>Face Detection</td><td>Haar Cascade</td></tr>
+            <tr><td>ROI Extraction</td><td>Forehead region</td></tr>
+            <tr><td>HR Range</td><td>40–180 BPM</td></tr>
+            <tr><td>Sampling Buffer</td><td>150 frames</td></tr>
+            <tr><td>DL Model</td><td>1D CNN</td></tr>
+        </table>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header green-header">Algorithms & Methods</div>
         <ul>
-            <li>Non-contact measurement</li>
-            <li>Real-time processing</li>
-            <li>Dataset validation</li>
-            <li>Web-based interface</li>
+            <li>FFT-based frequency analysis</li>
+            <li>Peak detection from dominant frequency</li>
+            <li>Forehead ROI for stable signal</li>
+            <li>Demo mode using Kaggle/UBFC-style video + ground truth</li>
+            <li>Optional DL prediction using trained 1D CNN</li>
         </ul>
     </div>
-
-    <div class="card">
-        <h2>Technical Specifications</h2>
-        <p><strong>Face detection:</strong> Haar Cascade</p>
-        <p><strong>ROI:</strong> Forehead region</p>
-        <p><strong>Signal extraction:</strong> Green channel mean</p>
-        <p><strong>Signal processing:</strong> Detrending + FFT</p>
-        <p><strong>Heart rate range:</strong> 40 to 180 BPM</p>
-        <p><strong>Sampling target:</strong> ~30 FPS</p>
-    </div>
 </div>
 
-<div class="grid pipeline-grid">
-    <div class="pipe-box blue">Video Input<br><small>Webcam / Demo video</small></div>
-    <div class="arrow">→</div>
-    <div class="pipe-box cyan">Face Detection<br><small>Haar Cascade</small></div>
-    <div class="arrow">→</div>
-    <div class="pipe-box green">ROI Extraction<br><small>Forehead region</small></div>
-    <div class="arrow">→</div>
-    <div class="pipe-box red">Signal Processing<br><small>FFT + BPM</small></div>
+{% if summary %}
+<div class="summary-cards">
+    <div class="summary-card"><strong>{{ summary.average_accuracy }}%</strong><span>Dataset Accuracy</span></div>
+    <div class="summary-card"><strong>{{ summary.average_error }} BPM</strong><span>Average Error</span></div>
+    <div class="summary-card"><strong>{{ summary.total_subjects }}</strong><span>Total Subjects</span></div>
+    <div class="summary-card"><strong>{{ summary.best_accuracy }}%</strong><span>Best Accuracy</span></div>
 </div>
-
-<div class="grid three-cols">
-    <div class="card">
-        <h2>Performance</h2>
-        <p><strong>Real-time output:</strong> Yes</p>
-        <p><strong>Buffer target:</strong> 150 samples</p>
-        <p><strong>Average delay:</strong> Few seconds</p>
-    </div>
-
-    <div class="card">
-        <h2>Dataset Validation</h2>
-        <p>Supports UBFC/Kaggle style dataset folders containing:</p>
-        <ul>
-            <li>Video file</li>
-            <li>ground_truth.txt</li>
-        </ul>
-    </div>
-
-    <div class="card">
-        <h2>Deep Learning</h2>
-        <p><strong>Model:</strong> 1D CNN</p>
-        <p><strong>Training file:</strong> model/train_dl_model.py</p>
-        <p><strong>Prediction file:</strong> model/predict_dl.py</p>
-        <p>Currently included for final integration and future improvement.</p>
-    </div>
-</div>
+{% endif %}
 {% endblock %}
