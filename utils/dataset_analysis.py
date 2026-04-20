@@ -105,7 +105,6 @@ def make_plot(subject_name, plot_dir, times, signal, bpm_over_time, gt_hr, est_h
     plot_file = f"{subject_name}_analysis.png"
     plot_path = os.path.join(plot_dir, plot_file)
 
-    # if plot already exists, do not recreate it again
     if os.path.exists(plot_path):
         return plot_file
 
@@ -158,7 +157,6 @@ def make_plot(subject_name, plot_dir, times, signal, bpm_over_time, gt_hr, est_h
 def analyze_subject(subject_path, plot_dir, force_refresh=False):
     subject_name = os.path.basename(subject_path)
 
-    # use subject-level cache if available
     if not force_refresh:
         cached = load_subject_cache(subject_path)
         if cached:
@@ -199,10 +197,9 @@ def analyze_subject(subject_path, plot_dir, force_refresh=False):
     frame_index = 0
     processed_frames = 0
 
-    # speed settings
-    frame_skip = 2              # process every 2nd frame
-    bpm_check_interval = 15     # compute bpm every 15 processed frames
-    resize_width = 640          # smaller frame for faster face detection
+    frame_skip = 2
+    bpm_check_interval = 15
+    resize_width = 640
 
     while True:
         ok, frame = cap.read()
@@ -214,7 +211,6 @@ def analyze_subject(subject_path, plot_dir, force_refresh=False):
         if frame_index % frame_skip != 0:
             continue
 
-        # resize for faster processing
         h, w = frame.shape[:2]
         if w > resize_width:
             scale = resize_width / float(w)
@@ -288,6 +284,12 @@ def analyze_subject(subject_path, plot_dir, force_refresh=False):
     return result
 
 
+def calculate_std(values):
+    if not values:
+        return 0.0
+    return round(float(np.std(values)), 1)
+
+
 def run_dataset_analysis(dataset_root, plot_dir, force_refresh=False):
     os.makedirs(plot_dir, exist_ok=True)
 
@@ -310,17 +312,36 @@ def run_dataset_analysis(dataset_root, plot_dir, force_refresh=False):
             "message": "No valid subject folders found"
         }
 
-    avg_accuracy = round(sum(x["accuracy"] for x in results) / len(results), 1)
-    avg_error = round(sum(x["error"] for x in results) / len(results), 1)
-    best_accuracy = round(max(x["accuracy"] for x in results), 1)
-    worst_accuracy = round(min(x["accuracy"] for x in results), 1)
+    gt_list = [x["gt_hr"] for x in results]
+    est_list = [x["est_hr"] for x in results]
+    error_list = [x["error"] for x in results]
+    accuracy_list = [x["accuracy"] for x in results]
+
+    avg_gt = round(sum(gt_list) / len(gt_list), 1)
+    avg_est = round(sum(est_list) / len(est_list), 1)
+    avg_accuracy = round(sum(accuracy_list) / len(accuracy_list), 1)
+    avg_error = round(sum(error_list) / len(error_list), 1)
+
+    std_gt = calculate_std(gt_list)
+    std_est = calculate_std(est_list)
+    std_error = calculate_std(error_list)
+    std_accuracy = calculate_std(accuracy_list)
+
+    best_accuracy = round(max(accuracy_list), 1)
+    worst_accuracy = round(min(accuracy_list), 1)
 
     summary = {
         "success": True,
         "total_subjects": len(results),
         "successful_analyses": len(results),
+        "average_gt_hr": avg_gt,
+        "average_est_hr": avg_est,
         "average_accuracy": avg_accuracy,
         "average_error": avg_error,
+        "std_gt_hr": std_gt,
+        "std_est_hr": std_est,
+        "std_error": std_error,
+        "std_accuracy": std_accuracy,
         "best_accuracy": best_accuracy,
         "worst_accuracy": worst_accuracy,
         "subjects": results
