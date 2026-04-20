@@ -47,6 +47,7 @@ body {
 .subhead {
     color: #555;
     margin-bottom: 18px;
+    line-height: 1.6;
 }
 
 .hero-grid {
@@ -81,19 +82,20 @@ body {
     padding: 22px;
     border-radius: 14px;
     flex: 1;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .hero-buttons {
     display: flex;
     gap: 14px;
+    flex-wrap: wrap;
 }
 
 .how-card {
     background: white;
     padding: 28px;
     border-radius: 18px;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
 }
 
 .how-grid {
@@ -108,7 +110,7 @@ body {
     background: white;
     padding: 28px;
     border-radius: 14px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
 .auth-card form {
@@ -140,9 +142,16 @@ body {
     text-decoration: none;
     display: inline-block;
     font-weight: bold;
+    transition: all 0.2s ease;
 }
 
-.primary, .green-btn {
+.btn:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+.primary,
+.green-btn {
     background: #16a34a;
     color: white;
 }
@@ -198,7 +207,7 @@ body {
     background: white;
     padding: 18px;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     margin-bottom: 20px;
 }
 
@@ -249,7 +258,8 @@ body {
     background: #000;
 }
 
-.control-row, .demo-row {
+.control-row,
+.demo-row {
     display: flex;
     gap: 12px;
     margin-top: 14px;
@@ -259,6 +269,8 @@ body {
 
 .demo-row select {
     padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
 }
 
 .instruction-box {
@@ -266,6 +278,7 @@ body {
     padding: 18px;
     border-radius: 10px;
     margin-top: 16px;
+    line-height: 1.6;
 }
 
 .bpm-big {
@@ -273,6 +286,7 @@ body {
     color: #d64545;
     text-align: center;
     margin-top: 10px;
+    font-weight: bold;
 }
 
 .muted {
@@ -293,11 +307,17 @@ body {
     padding: 16px;
     border-radius: 10px;
     text-align: center;
+    border: 1px solid #ececec;
 }
 
 .small-stat span {
     display: block;
     margin-bottom: 6px;
+    color: #666;
+}
+
+.small-stat strong {
+    font-size: 22px;
 }
 
 .progress-bg {
@@ -313,6 +333,7 @@ body {
     height: 100%;
     width: 0;
     background: #2563eb;
+    transition: width 0.4s ease;
 }
 
 .cyan-fill {
@@ -326,14 +347,45 @@ body {
     text-align: center;
     margin-top: 12px;
     font-weight: 600;
+    border: 1px solid transparent;
 }
 
 .status-box.secondary {
     background: #eef6ff;
+    color: #1e3a8a;
+    border-color: #bfdbfe;
+}
+
+.status-box.success {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
+}
+
+.status-box.warning {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fcd34d;
+}
+
+.status-box.danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+}
+
+.status-box.info {
+    background: #e0f2fe;
+    color: #0c4a6e;
+    border-color: #7dd3fc;
 }
 
 .chart-panel {
     margin-top: 16px;
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid #eee;
 }
 
 .console-box {
@@ -344,6 +396,7 @@ body {
     border-radius: 10px;
     font-family: monospace;
     overflow-y: auto;
+    line-height: 1.6;
 }
 
 .summary-cards {
@@ -359,11 +412,13 @@ body {
     padding: 22px;
     border-radius: 12px;
     text-align: center;
+    box-shadow: 0 6px 16px rgba(113, 140, 255, 0.25);
 }
 
 .summary-card strong {
     display: block;
     font-size: 34px;
+    margin-bottom: 8px;
 }
 
 .status-pill {
@@ -402,17 +457,31 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-th, td {
+th,
+td {
     border-bottom: 1px solid #ddd;
     padding: 12px;
     text-align: left;
+    vertical-align: middle;
 }
 
 th {
     background: #111827;
     color: white;
+}
+
+tr:hover td {
+    background: #f8fafc;
+}
+
+canvas {
+    width: 100% !important;
+    max-width: 100%;
 }
 
 @media (max-width: 1100px) {
@@ -441,5 +510,42 @@ th {
 
     .auth-card {
         width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .wrapper {
+        width: 94%;
+    }
+
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .control-row,
+    .demo-row,
+    .hero-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .stats-three {
+        grid-template-columns: 1fr;
+    }
+
+    .bpm-big {
+        font-size: 52px;
+    }
+
+    .page-title {
+        font-size: 30px;
+    }
+
+    th,
+    td {
+        font-size: 14px;
+        padding: 10px;
     }
 }
