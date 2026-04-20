@@ -43,8 +43,63 @@
     </div>
 </div>
 
+<!-- Summary Results Table -->
 <div class="panel">
-    <h2>Detailed Subject Results</h2>
+    <div class="panel-header cyan-header">Summary Results</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>GT HR</th>
+                <th>Est HR</th>
+                <th>Error</th>
+                <th>Accuracy</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in summary.subjects %}
+            <tr>
+                <td>{{ row.subject }}</td>
+                <td>{{ row.gt_hr }}</td>
+                <td>{{ row.est_hr }}</td>
+                <td>{{ row.error }}</td>
+                <td>{{ row.accuracy }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid #ddd;">
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-family: monospace; color:#444;">
+            <div>
+                <strong>Average</strong>
+                {{ summary.subjects | map(attribute='gt_hr') | sum / summary.subjects|length if summary.subjects else 0 | round(1) }}
+                {{ summary.subjects | map(attribute='est_hr') | sum / summary.subjects|length if summary.subjects else 0 | round(1) }}
+                {{ summary.average_error }}
+                {{ summary.average_accuracy }}%
+            </div>
+
+            <div>
+                <strong>Std Dev</strong>
+                -
+            </div>
+        </div>
+
+        <div style="margin-top: 18px; font-family: monospace; color:#444; line-height:1.7;">
+            <strong>Overall Performance:</strong><br>
+            Successful analyses: {{ summary.successful_analyses }}/{{ summary.total_subjects }}<br>
+            Average Accuracy: {{ summary.average_accuracy }}%<br>
+            Average Error: {{ summary.average_error }} BPM<br>
+            Best Accuracy: {{ summary.best_accuracy }}%<br>
+            Worst Accuracy: {{ summary.worst_accuracy }}%
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Subject Results -->
+<div class="panel">
+    <div class="panel-header green-header">Detailed Subject Results</div>
 
     <table>
         <thead>
@@ -86,6 +141,29 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<!-- Analysis Plots -->
+<div class="panel">
+    <div class="panel-header" style="background:#f4b400;">Analysis Plots</div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:18px;">
+        {% for row in summary.subjects %}
+        <div style="background:#fafafa; border:1px solid #e5e7eb; border-radius:12px; padding:14px; text-align:center;">
+            <h3 style="margin-top:0;">{{ row.subject }} Analysis</h3>
+            <a target="_blank" href="{{ url_for('static', filename='plots/' ~ row.plot_file) }}">
+                <img src="{{ url_for('static', filename='plots/' ~ row.plot_file) }}"
+                     alt="{{ row.subject }} plot"
+                     style="width:100%; border-radius:10px; border:1px solid #ddd;">
+            </a>
+            <p style="margin:10px 0 0; color:#555;">
+                GT: {{ row.gt_hr }} BPM |
+                Est: {{ row.est_hr }} BPM |
+                Acc: {{ row.accuracy }}%
+            </p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}
 
