@@ -71,32 +71,33 @@
     </table>
 
     <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid #ddd;">
-        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-family: monospace; color:#444;">
-            <div>
-                <strong>Average</strong>
-                {{ summary.subjects | map(attribute='gt_hr') | sum / summary.subjects|length if summary.subjects else 0 | round(1) }}
-                {{ summary.subjects | map(attribute='est_hr') | sum / summary.subjects|length if summary.subjects else 0 | round(1) }}
-                {{ summary.average_error }}
-                {{ summary.average_accuracy }}%
-            </div>
-
-            <div>
-                <strong>Std Dev</strong>
-                -
-            </div>
+    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-family: monospace; color:#444;">
+        <div>
+            <strong>Average</strong>
+            {{ summary.average_gt_hr }}
+            {{ summary.average_est_hr }}
+            {{ summary.average_error }}
+            {{ summary.average_accuracy }}%
         </div>
 
-        <div style="margin-top: 18px; font-family: monospace; color:#444; line-height:1.7;">
-            <strong>Overall Performance:</strong><br>
-            Successful analyses: {{ summary.successful_analyses }}/{{ summary.total_subjects }}<br>
-            Average Accuracy: {{ summary.average_accuracy }}%<br>
-            Average Error: {{ summary.average_error }} BPM<br>
-            Best Accuracy: {{ summary.best_accuracy }}%<br>
-            Worst Accuracy: {{ summary.worst_accuracy }}%
+        <div>
+            <strong>Std Dev</strong>
+            {{ summary.std_gt_hr }}
+            {{ summary.std_est_hr }}
+            {{ summary.std_error }}
+            {{ summary.std_accuracy }}%
         </div>
     </div>
-</div>
 
+    <div style="margin-top: 18px; font-family: monospace; color:#444; line-height:1.7;">
+        <strong>Overall Performance:</strong><br>
+        Successful analyses: {{ summary.successful_analyses }}/{{ summary.total_subjects }}<br>
+        Average Accuracy: {{ summary.average_accuracy }}%<br>
+        Average Error: {{ summary.average_error }} BPM<br>
+        Best Accuracy: {{ summary.best_accuracy }}%<br>
+        Worst Accuracy: {{ summary.worst_accuracy }}%
+    </div>
+</div>
 <!-- Detailed Subject Results -->
 <div class="panel">
     <div class="panel-header green-header">Detailed Subject Results</div>
