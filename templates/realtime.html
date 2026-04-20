@@ -5,6 +5,7 @@
 <div class="monitor-grid">
     <div class="panel left-panel">
         <div class="panel-header blue-header">Live Camera Feed</div>
+
         <div class="video-box">
             <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="video">
         </div>
@@ -50,21 +51,32 @@
             <div class="small-stat"><span>Max</span><strong id="maxBpm">--</strong></div>
         </div>
 
+        <h3>Heart Condition</h3>
+        <div class="status-box secondary" id="conditionBox">No reading</div>
+
         <h3>Signal Quality</h3>
-        <div class="progress-bg"><div id="qualityBar" class="progress-fill"></div></div>
+        <div class="progress-bg">
+            <div id="qualityBar" class="progress-fill"></div>
+        </div>
         <div id="qualityText" class="muted">Waiting for signal...</div>
 
         <h3>Buffer Status</h3>
-        <div class="progress-bg"><div id="bufferBar" class="progress-fill cyan-fill"></div></div>
+        <div class="progress-bg">
+            <div id="bufferBar" class="progress-fill cyan-fill"></div>
+        </div>
         <div id="bufferText" class="muted">Collecting data: 0/150 frames</div>
 
+        <h3>Monitoring Status</h3>
         <div class="status-box" id="statusBox">Ready to start monitoring</div>
+
         <div class="status-box secondary" id="modeText">Mode: idle</div>
         <div class="status-box secondary" id="subjectText">Subject: -</div>
+        <div class="status-box secondary" id="dlText">DL Model: Off</div>
 
         <div class="chart-panel">
             <canvas id="signalChart"></canvas>
         </div>
+
         <div class="chart-panel">
             <canvas id="bpmChart"></canvas>
         </div>
@@ -78,66 +90,172 @@ let bpmChart;
 function initCharts() {
     signalChart = new Chart(document.getElementById("signalChart").getContext("2d"), {
         type: "line",
-        data: { labels: [], datasets: [{ label: "Signal", data: [], borderWidth: 2 }] },
-        options: { responsive: true, animation: false }
+        data: {
+            labels: [],
+            datasets: [{
+                label: "Signal",
+                data: [],
+                borderWidth: 2,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Time (s)"
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: "Signal"
+                    }
+                }
+            }
+        }
     });
 
     bpmChart = new Chart(document.getElementById("bpmChart").getContext("2d"), {
         type: "line",
-        data: { labels: [], datasets: [{ label: "BPM", data: [], borderWidth: 2 }] },
-        options: { responsive: true, animation: false }
+        data: {
+            labels: [],
+            datasets: [{
+                label: "BPM",
+                data: [],
+                borderWidth: 2,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Time (s)"
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: "Heart Rate"
+                    },
+                    suggestedMin: 40,
+                    suggestedMax: 140
+                }
+            }
+        }
     });
 }
 
 async function startLive() {
-    await fetch("/api/start_live", { method: "POST" });
+    try {
+        const res = await fetch("/api/start_live", { method: "POST" });
+        const data = await res.json();
+        console.log(data.message);
+    } catch (err) {
+        console.error("Error starting live monitoring:", err);
+    }
 }
 
 async function startDemo() {
-    const subject = document.getElementById("subjectSelect").value;
-    const useDl = document.getElementById("useDl").checked;
+    try {
+        const subject = document.getElementById("subjectSelect").value;
+        const useDl = document.getElementById("useDl").checked;
 
-    await fetch("/api/start_demo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject: subject, use_dl: useDl })
-    });
+        const res = await fetch("/api/start_demo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                subject: subject,
+                use_dl: useDl
+            })
+        });
+
+        const data = await res.json();
+        console.log(data.message);
+    } catch (err) {
+        console.error("Error starting demo mode:", err);
+    }
 }
 
 async function stopMonitor() {
-    await fetch("/api/stop_monitor", { method: "POST" });
+    try {
+        const res = await fetch("/api/stop_monitor", { method: "POST" });
+        const data = await res.json();
+        console.log(data.message);
+    } catch (err) {
+        console.error("Error stopping monitoring:", err);
+    }
+}
+
+function updateConditionBox(condition, cssClass) {
+    const box = document.getElementById("conditionBox");
+    box.innerText = condition || "No reading";
+
+    box.className = "status-box";
+
+    if (cssClass === "success") {
+        box.classList.add("success");
+    } else if (cssClass === "warning") {
+        box.classList.add("warning");
+    } else if (cssClass === "danger") {
+        box.classList.add("danger");
+    } else if (cssClass === "info") {
+        box.classList.add("info");
+    } else {
+        box.classList.add("secondary");
+    }
 }
 
 async function loadStats() {
-    const res = await fetch("/api/stats");
-    const data = await res.json();
+    try {
+        const res = await fetch("/api/stats");
+        const data = await res.json();
 
-    document.getElementById("currentBpm").innerText = data.current_bpm || "--";
-    document.getElementById("minBpm").innerText = data.min_bpm || "--";
-    document.getElementById("avgBpm").innerText = data.avg_bpm || "--";
-    document.getElementById("maxBpm").innerText = data.max_bpm || "--";
+        document.getElementById("currentBpm").innerText = data.current_bpm > 0 ? data.current_bpm : "--";
+        document.getElementById("minBpm").innerText = data.min_bpm > 0 ? data.min_bpm : "--";
+        document.getElementById("avgBpm").innerText = data.avg_bpm > 0 ? data.avg_bpm : "--";
+        document.getElementById("maxBpm").innerText = data.max_bpm > 0 ? data.max_bpm : "--";
 
-    document.getElementById("qualityBar").style.width = data.signal_quality + "%";
-    document.getElementById("qualityText").innerText = data.signal_quality + "%";
+        document.getElementById("qualityBar").style.width = (data.signal_quality || 0) + "%";
+        document.getElementById("qualityText").innerText = (data.signal_quality || 0) + "%";
 
-    const bufferPercent = Math.min(100, (data.buffer_count / data.buffer_target) * 100);
-    document.getElementById("bufferBar").style.width = bufferPercent + "%";
-    document.getElementById("bufferText").innerText = "Collecting data: " + data.buffer_count + "/" + data.buffer_target + " frames";
+        const bufferPercent = data.buffer_target > 0
+            ? Math.min(100, ((data.buffer_count || 0) / data.buffer_target) * 100)
+            : 0;
 
-    document.getElementById("statusBox").innerText = data.status;
-    document.getElementById("modeText").innerText = "Mode: " + data.mode;
-    document.getElementById("subjectText").innerText = "Subject: " + data.subject;
+        document.getElementById("bufferBar").style.width = bufferPercent + "%";
+        document.getElementById("bufferText").innerText =
+            "Collecting data: " + (data.buffer_count || 0) + "/" + (data.buffer_target || 150) + " frames";
 
-    signalChart.data.labels = data.signal_times.map(x => x.toFixed(1));
-    signalChart.data.datasets[0].data = data.signal_values;
-    signalChart.update();
+        document.getElementById("statusBox").innerText = data.status || "Ready to start monitoring";
+        document.getElementById("modeText").innerText = "Mode: " + (data.mode || "idle");
+        document.getElementById("subjectText").innerText = "Subject: " + (data.subject || "-");
+        document.getElementById("dlText").innerText = "DL Model: " + (data.use_dl ? "On" : "Off");
 
-    bpmChart.data.labels = data.bpm_times.map(x => x.toFixed(1));
-    bpmChart.data.datasets[0].data = data.bpm_values;
-    bpmChart.update();
+        updateConditionBox(data.hr_condition, data.condition_class);
+
+        signalChart.data.labels = (data.signal_times || []).map(x => x.toFixed(1));
+        signalChart.data.datasets[0].data = data.signal_values || [];
+        signalChart.update();
+
+        bpmChart.data.labels = (data.bpm_times || []).map(x => x.toFixed(1));
+        bpmChart.data.datasets[0].data = data.bpm_values || [];
+        bpmChart.update();
+
+    } catch (err) {
+        console.error("Error loading stats:", err);
+    }
 }
 
 initCharts();
+loadStats();
 setInterval(loadStats, 1200);
 </script>
 {% endblock %}
