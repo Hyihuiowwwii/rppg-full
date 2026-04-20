@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HeartRate Pro</title>
+    <title>HeartRate Pro - rPPG Monitoring System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <nav class="navbar">
         <div class="brand">🤍 HeartRate Pro</div>
+
         <div class="nav-links">
             {% if session.get('user_id') %}
-                <a href="{{ url_for('dashboard') }}">Home</a>
                 <a href="{{ url_for('dashboard') }}">Dashboard</a>
-                <a href="{{ url_for('model_info') }}">Model Info</a>
+                <a href="{{ url_for('realtime_monitoring') }}">Real-Time Monitor</a>
                 <a href="{{ url_for('dataset_analysis') }}">Dataset Analysis</a>
-                <a href="{{ url_for('realtime_monitoring') }}">Real-time Monitor</a>
+                <a href="{{ url_for('model_info') }}">Model Info</a>
+                <a href="{{ url_for('history') }}">History</a>
                 <a href="{{ url_for('logout') }}">Logout</a>
             {% else %}
                 <a href="{{ url_for('home') }}">Home</a>
@@ -34,6 +35,7 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
         {% block content %}{% endblock %}
     </div>
 </body>
